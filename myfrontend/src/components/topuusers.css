@@ -1,0 +1,28 @@
+.sidenav {
+    height: 290px;
+    width: 350px;
+    position: relative;
+    z-index: 1;
+    top: 0;
+    left: 35.5%;
+    background-image: url('https://image.freepik.com/free-photo/watercolor-splash-background_23-2148175602.jpg');
+    overflow-x: hidden;
+    padding-top: 20px;
+  }
+  
+  .sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #070707 ;
+  display: block;
+  }
+  .sidenav h12 {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: 'black';
+  border-left: 6px solid #1423A4;
+  display: block;
+  background-color: #FFC107;
+  }
