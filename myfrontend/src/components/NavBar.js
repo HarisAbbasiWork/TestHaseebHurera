@@ -1,20 +1,25 @@
 import React, { useContext , useEffect, useState } from 'react'
 import "bootstrap/dist/css/bootstrap.min.css";
-import Navbar from 'react-bootstrap/Navbar'
-import Nav from 'react-bootstrap/Nav'
+
 import Button from 'react-bootstrap/Button'
-import Form from 'react-bootstrap/Form' 
-import FormControl from 'react-bootstrap/FormControl'
+
 import { BrowserRouter as Router, Switch, Route, Link,withRouter, useHistory } from "react-router-dom";
-import Jobpost from './Jobpost'
+import Bikepost from './Bikepost'
 import ShowJobs from './showjobs'
 import LoginForm from './LoginForm'
 import SignupForm from './SignupForm'
-import TopUsers from './topusers'
 import EditJob from './EditJob'
+import Bannedusers from './bannedusers'
+import Users from './users'
 import Profile from './Profile'
-import FavJobs from './FavJobs'
+import Savedads from './Savedads'
+import Showbrandads from './Showbrandads'
+import NabBar2 from './NavBar2'
+import Addetails from './addetails'
+import Settings from './Settings'
+import Searchedusers from './searchedusers'
 import axios from 'axios'
+import Adminlogin from './adminlogin'
 import {UserContext} from './UserContext'
 //export const UserContext = React.createContext()
 function NavBar(props) {
@@ -22,66 +27,55 @@ function NavBar(props) {
   const [user3, setUser3] = useState("Login");
   const [email2, setEmail2] = useState("Login");
   const [userid, setUserid] = useState("eww");
-  const [islogged, setIslogged] = useState("islogged");
+  const [isadmin, setIsadmin] = useState("false");
+  const [favs, setFavs] = useState([]);
+  const [following, setFollowing] = useState([]);
+  const [islogged, setIslogged] = useState("false");
   let history = useHistory();
   const [redirectToReferrer, setRedirectToReferrer] = useState("false")
   const [test, setTest]= useState(null)
+  const [updatejobs, setUpdatejobs]= useState(0)
+  const updatefavs=(upfavs)=>{
+    console.log("Updating favs: ",upfavs)
+    setFavs(upfavs)
+  }
+  const updatefollowing=(following)=>{
+    console.log("Updating following: ",following)
+    setFollowing(following)
+  }
   const value12 = {
     user2: user2,
     email2: email2,
     islogged: islogged,
     userid: userid,
+    
+    following: following,
+    favs: favs,
+    updatefavs: updatefavs,
+    updatefollowing: updatefollowing,
+    isadmin: isadmin,
+    updatejobs:updatejobs,
     test: test
   }
-  const openProfile=(id)=>{
-    console.log('/profile/'+id)
-    history.push('/profile/'+id);
-
-}
+  
   useEffect(() => {
     
   },[test]);
   const logout=()=>{
-    axios.post('http://localhost:5000/logout', {
-      
-    })
-    .then(function (response) {
-        
-    })
-    .catch(function (error) {
-      console.log('Error is ',error);
-    });
+    setIslogged("false")
+    setEmail2("Login")
+    setUser3("Login")
+    setUserid("eww")
+    setUser2("")
+    setTest(test+1)
   }
+  
   
     
     return (<Router>
         <div>
                 <>
-                <Navbar bg="warning" variant="dark">
-                  <Navbar.Brand style={{color: 'black'}} to="/" href="/">JobPost</Navbar.Brand>
-                  <Form inline>
-                    <FormControl type="text" placeholder="Search" className="mr-sm-2" />
-                    <Button style={{color: 'black'}} variant="outline-light">Search</Button>
-                  </Form>
-
-                  {islogged==="true" 
-                  ? <Nav style={{}} className="mr-auto">
-                    <Nav.Link style={{color: 'black'}} to="/favjobs" href="/favjobs">Favorite Jobs</Nav.Link>
-                    </Nav>
-                  : <Nav style={{position: 'absolute', right: 70}} className="mr-auto">
-                    <Nav.Link style={{color: 'black'}} to="/sign-up" href="/sign-up">Signup</Nav.Link>
-                    </Nav>
-                  }
-                  
-                  <Nav style={{position: 'absolute', right: 15}} className="mr-auto">
-                    {islogged==="true"
-                    ? <Nav.Link onClick={logout} style={{color: 'black', paddingright:'10px'}} >Logout</Nav.Link>
-                    : <Nav.Link style={{color: 'black'}} to="/sign-in" href="/sign-in">{user3}</Nav.Link>}
-                    <Nav.Link style={{color: 'black'}} onClick={() => { openProfile(userid)}}>{user2}</Nav.Link>
-                    
-                    
-                  </Nav>
-                </Navbar>
+                <NabBar2 islogged={islogged} setIsadmin={setIsadmin} isadmin={isadmin} user3={user3} user2={user2} logout={logout} userid={userid} />
                 <br></br>
                 <div className="auth-wrapper">
                   <div className="auth-inner">
@@ -89,23 +83,39 @@ function NavBar(props) {
                     <Switch>
                     <UserContext.Provider value={ value12 }>
                       <Route exact path="/" >
-                      <TopUsers />
-                      {islogged==="true"
-                      ?<Jobpost setTest={setTest} email2= {email2} />
-                      :<Button href="/sign-in" style={{marginLeft: '500px'}} >Click Here To Login So You Can Add Jobs</Button>
-                      }
                       
-                      <ShowJobs  />
+                      
+                      <ShowJobs />
                       </Route>
-                      <Route path="/favjobs" component={FavJobs}/>
-                        
+                      <Route path="/savedads" component={Savedads}/>
+                      <Route path="/ads/brand/:brand" component={Showbrandads}/>
+                      <Route path="/ads/part/:part" component={Showbrandads}/>
+                      <Route path="/admin" >
+                        <Adminlogin setIsadmin={setIsadmin}/>
+                      </Route>
+                      <Route path="/bannedusers" >
+                        <Bannedusers isadmin={isadmin}/>
+                      </Route>
+                      <Route path="/users" >
+                        <Users isadmin={isadmin}/>
+                      </Route>
+                      <Route path="/search/:query" component={Searchedusers}/>
+                      <Route path="/ad/:id" component={Addetails}/>
+                      <Route path="/addbikead">
+                        <Bikepost setTest={setTest} userid={userid} email2= {email2}  />
+                      </Route>
                       
                       <Route path="/sign-in" >
-                        <LoginForm setEmail2={setEmail2} setUserid={setUserid} setIslogged={setIslogged} setUser2={setUser2} user2={user2}/>
+                        <LoginForm setFavs={setFavs} setFollowing={setFollowing} setEmail2={setEmail2} setUserid={setUserid} setIslogged={setIslogged} setUser2={setUser2} user2={user2}/>
                         </Route>
                         <Route path="/sign-up" component={SignupForm} />
                         <Route path="/edit/:id" component={EditJob} />
-                        <Route path="/profile/:id" exact component={Profile} />
+                        <Route path="/settings" >
+                          <Settings/>
+                        </Route>
+                        <Route path="/profile/:id" >
+                          <Profile email2={email2} userid={userid} updatefollowing={updatefollowing}/>
+                        </Route>
                       </UserContext.Provider>
                     </Switch>
                     

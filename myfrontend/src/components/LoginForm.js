@@ -2,7 +2,8 @@ import React, {useState,useEffect, useMemo} from 'react'
 import { withRouter, useHistory } from 'react-router-dom'; 
 import axios from 'axios'
 import NavBar from './NavBar'
-function LoginForm({props, setEmail2,setUserid, setUser2, user2, setIslogged }) {
+import FacebookLogin from 'react-facebook-login';
+function LoginForm({props,setFavs,setFollowing, setEmail2,setUserid, setUser2, user2, setIslogged }) {
     const [email, setEmail] = useState("Profile")
     const [pass, setPass] = useState("")
     const [error, setError] = useState(null);
@@ -36,11 +37,14 @@ function LoginForm({props, setEmail2,setUserid, setUser2, user2, setIslogged }) 
           }}
         
         axios(options).then(response => {
-          console.log("Response is ",response.data.fname, response.data.id)
+          console.log("Response is ",response.data)
           if(response.data.success){
             setUser2(response.data.fname +" "+ response.data.lname)
             setEmail2(email)
             setUserid(response.data.id)
+            setFavs(response.data.favs)
+            setFollowing(response.data.following)
+            console.log("Favs are: ",response.data.favs)
             setIslogged("true")
             console.log("We know evertything now after submission", email)
             history.push('/');
@@ -67,7 +71,10 @@ function LoginForm({props, setEmail2,setUserid, setUser2, user2, setIslogged }) 
         
         
     }
-    
+    const responseFacebook = (response) => {
+        console.log(response);
+        
+      }
     useEffect(() => {
         // Update the document title using the browser API
         
@@ -108,6 +115,7 @@ function LoginForm({props, setEmail2,setUserid, setUser2, user2, setIslogged }) 
 
             </form>
             {error? <div class="alert alert-danger" role="alert">{error}</div> : null}
+            
             
             
             

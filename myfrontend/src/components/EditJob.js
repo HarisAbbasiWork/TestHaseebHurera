@@ -1,29 +1,44 @@
-import React, {useState,useEffect} from 'react'
+import React, {useState,useEffect, useContext} from 'react'
 import {useParams,withRouter, useHistory} from "react-router-dom";
 import axios from 'axios'
 import { pk } from "./pk.js";
-
+import {UserContext} from './UserContext'
+import { brands } from "./brands.js";
+import { years } from "./years.js";
+import './mycss.css'
+import { BikeParts } from "./BikeParts.js";
 function EditJob() {
     let params = useParams();
-    const [jobtype, setJobtype] = useState("")
-    const [jobdescription, setJobdescription] = useState("")
-    const [city, setCity] = useState("")
-    const [email, setEmail] = useState("")
+    const value12 = useContext(UserContext);
+    const [year, setYear] = useState("")
+    const [addescription, setAddescription] = useState("")
+    const [brand, setBrand] = useState("")
+    const [adtitle, setAdtitle] = useState("")
+    const [price, setPrice] = useState("")
+    const [Mileage, setMileage] = useState("")
+    const [BikePart, setBikePart] = useState("")
+    const [condition, setCondition] = useState("")
+    const [Category, setCategory] = useState("")
+    const [selectedfile, setSelectedfile] = useState("")
+    const [success, setSuccess] = useState(null);
+    const [selectedfile2, setSelectedfile2] = useState("")
     let history = useHistory();
-    const handleChange=(e) =>{
-        setJobtype(e.target.value)
-    }
-    const handleChange2=(e) =>{
-        setCity(e.target.value)
-    }
+    
     const getJob=(id)=>{
-        axios.get('http://localhost:5000/'+id)
+        axios.get('http://localhost:5000/ad/'+id)
             .then(response => {
                 console.log(response.data)
-                setJobtype(response.data.jobtype)
-                setJobdescription(response.data.jobdescription)
-                setCity(response.data.city)
-                setEmail(response.data.useremail)
+                setCategory(response.data.Category)
+                if(response.data.Category==="Bike"){
+                    setYear(response.data.Model)
+                    setBrand(response.data.brand)
+                    setMileage(response.data.Mileage)
+                }else{
+                    setBikePart(response.data.BikePart)
+                }
+                setCondition(response.data.condition)
+                setAddescription(response.data.addescription)
+                setAdtitle(response.data.adtitle)
             })
             .catch(function (error){
                 console.log(error);
@@ -31,65 +46,110 @@ function EditJob() {
             })
     }
     const updatejob=()=>{
-        
+        const data = new FormData() 
+        data.append('file', selectedfile)
+        data.append('file', selectedfile2)
+        data.set("adtitle", adtitle);
+        data.set("year", year);
+        data.set("id", params.id);
+        data.set("Category", Category);
+        data.set("addescription", addescription);
+        data.set("brand", brand);
+        data.set("Mileage", Mileage);
+        data.set("BikePart", BikePart);
+        data.set("condition", condition);
+        data.set("price", price);
+        data.set("date", new Date().toLocaleString());
         const URL = "http://localhost:5000/updatejob";
-        var data2 ={
-          _id:params.id,  
-          jobtype: jobtype,
-          jobdescription: jobdescription,
-          useremail: email,
-          city: city,
-          date: new Date().toLocaleString()
-      }
-      console.log(data2);
-      const options = {
-        method: 'post',
-        url: URL,
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        data: data2,
-  
-        validateStatus: (status) => {
-            return true; // I'm always returning true, you may want to do it depending on the status received
-          
-      }}
-    
-    axios(options).then(response => { 
-        console.log("success response: ",response.data.message)
-        
-        history.push('/');
-    })
-    .catch(error => {
-        console.log(error.response)
-    });
+        axios.post(URL,data)
+            .then((response) => {
+                if(response.data.success){
+                    setSuccess(response.data.message)
+                }
+            }).catch((error) => {
+        });
 
+    }
+    const handleChange=(e) =>{
+        setYear(e.target.value)
+    }
+    const handleChange2=(e) =>{
+        setBrand(e.target.value)
+    }
+    const handleChange3=(e) =>{
+        setBikePart(e.target.value)
+    }
+    const onChangeValue=(event)=> {
+        console.log(event.target.value);
+        setCondition(event.target.value)
+      }
+      const onIMGChangeHandler=(event)=>{
+
+        console.log(event.target.files[0])
+        setSelectedfile(event.target.files[0])
+    
+    }
+    const onIMGChangeHandler2=(event)=>{
+
+        console.log(event.target.files[0])
+        setSelectedfile2(event.target.files[0])
+    
     }
     useEffect(() => {
         console.log("We editing job"+ params.id)
         getJob(params.id)
     }, [])
+    function PartOption({handleChange3}) {
+        return (<label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>Bike Parts:</label>,
+        <select name="BikeParts" onChange={handleChange3}>
+            {BikeParts.map(item=> <option value={item}>{item}</option>)}
+        </select>)
+      }
+      function BikeOptions({handleChange,handleChange2,model,Mileage,brand,setMileage}) {
+        return (<div><label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>Model:</label>
+        <select name="Year" value={model} onChange={handleChange}>
+        {years.map(item=> <option value={item}>{item}</option>)}
+        </select>
+        <label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>Brands:</label>
+        <select name="brand" value={brand} onChange={handleChange2}>{brands.map(item=> <option value={item}>{item}</option>)}</select>
+        <div className="form-group">
+            <label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>Mileage in Km</label>
+            <input type="text" value={Mileage} onChange={(e)=>{setMileage(e.target.value)}} className="form-control" placeholder="10,000" />
+        </div></div>)
+      }
     return (
         <div class="jumbotron">
             <h1>Edit Job</h1>
-            <label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>Choose Job Type:</label>
-            
-            <select name="Jobs" value={jobtype} onChange={handleChange}>
-                <option value="Software Engineer" >Software Engineer</option>
-                <option value="Data Expert">Data Expert</option>
-                <option value="Electrical Engineer">Electrical Engineer</option>
-                <option value="Mechanical Engineer">Mechanical Engineer</option>
-            </select>
-            <label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>City:</label>
-            <select name="city" value={city} onChange={handleChange2}>{pk.map(item=> <option value={item.city}>{item.city}</option>)}</select>
-            <div class="form-group">
-                <label style={{color:'black', fontSize: 22, fontWeight: 'bold'}}>Job Description</label>
-                <textarea value={jobdescription} onChange={(e)=>{setJobdescription(e.target.value)}} class="form-control" id="exampleFormControlTextarea1" rows="3">{jobdescription}</textarea>
+            <div className="form-group">
+                    <label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>Ad Title</label>
+                    <input type="text" value={adtitle} onChange={(e)=>{setAdtitle(e.target.value)}} className="form-control" placeholder="Ad Title" />
             </div>
-            <button onClick={() => updatejob()} type="button" class="btn btn-success">Done</button>
-            
-            
+            {Category=="Bike"
+            ?<BikeOptions handleChange={handleChange} brand={brand} model={year} handleChange2={handleChange2} Mileage={Mileage} setMileage={setMileage}/>
+            :null}
+            {Category=="Part"
+            ?<PartOption handleChange3={handleChange3} />
+            :null}
+            <div onChange={onChangeValue}>
+                <label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>Condition: </label>
+                <input type="radio" class="foo2" value="New" name="gender" /> New
+                <input type="radio" class="foo2" value="Used" name="gender" /> Used
+            </div>
+            <div className="form-group">
+                    <label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>Price</label>
+                    <input type="text" value={price} onChange={(e)=>{setPrice(e.target.value)}} className="form-control" placeholder="i.e 30,000" />
+            </div>
+            <div class="form-group">
+                <label style={{color:'black', fontSize: 22, fontWeight: 'bold'}}>Ad Description</label>
+                <textarea value={addescription} onChange={(e)=>{setAddescription(e.target.value)}} class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+            </div>
+            <label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>*Upload Image</label>
+            <input type="file" name="file" onChange={onIMGChangeHandler}/>
+            <br></br>
+            <label style={{color:'black', fontSize: 22, fontWeight: 'bold', paddingRight: '5px'}}>Upload Video</label>
+            <input type="file" name="file" onChange={onIMGChangeHandler2}/>
+            <button onClick={e => {e.preventDefault();updatejob()}} type="button" class="btn btn-success">Done</button>
+            {success? <div class="alert alert-success" role="alert">{success}</div> : null}
         </div>
     )
 }
